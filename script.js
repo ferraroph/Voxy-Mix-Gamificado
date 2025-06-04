@@ -249,8 +249,9 @@ class VoxyMixFunnel {
         const knobs = ['fama', 'dinheiro', 'precisao', 'velocidade'];
         const knobData = {};
         const MAX_POINTS = 300;
-        let isDragging = false;
-        let currentKnob = null;
+        // Controle de arraste dos knobs
+        this.dnaIsDragging = false;
+        this.dnaCurrentKnob = null;
 
         // Inicializar knobs
         knobs.forEach(knob => {
@@ -289,17 +290,17 @@ class VoxyMixFunnel {
 
     startKnobDrag(e, knobType, knobData) {
         e.preventDefault();
-        isDragging = true;
-        currentKnob = knobType;
+        this.dnaIsDragging = true;
+        this.dnaCurrentKnob = knobType;
         
         knobData[knobType].element.classList.add('dragging');
         this.audioSystem.playClick();
     }
 
     dragKnob(e, knobData, MAX_POINTS) {
-        if (!isDragging || !currentKnob) return;
+        if (!this.dnaIsDragging || !this.dnaCurrentKnob) return;
         
-        const knob = knobData[currentKnob];
+        const knob = knobData[this.dnaCurrentKnob];
         const rect = knob.element.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -327,12 +328,12 @@ class VoxyMixFunnel {
     }
 
     stopKnobDrag(knobData) {
-        if (isDragging && currentKnob) {
-            knobData[currentKnob].element.classList.remove('dragging');
+        if (this.dnaIsDragging && this.dnaCurrentKnob) {
+            knobData[this.dnaCurrentKnob].element.classList.remove('dragging');
             this.audioSystem.playRelease();
         }
-        isDragging = false;
-        currentKnob = null;
+        this.dnaIsDragging = false;
+        this.dnaCurrentKnob = null;
     }
 
     getTotalDNAPoints(knobData) {
@@ -486,9 +487,9 @@ class VoxyMixFunnel {
         
         let selectedSegments = new Set();
         let isPoweredOn = this.userData.etapa3.powerOn || false;
-        let progress = 0;
-        let isDragging = false;
-        let currentRotation = 0;
+        this.segmentProgress = 0;
+        this.segmentIsDragging = false;
+        this.segmentCurrentRotation = 0;
 
         // Power button
         if (powerBtn) {
@@ -526,7 +527,7 @@ class VoxyMixFunnel {
         // Advance button
         if (advanceBtn) {
             advanceBtn.addEventListener('click', () => {
-                if (progress >= 100 && selectedSegments.size > 0) {
+                if (this.segmentProgress >= 100 && selectedSegments.size > 0) {
                     this.completeSegmentation(selectedSegments);
                     this.goToStep(4);
                 }
@@ -535,7 +536,7 @@ class VoxyMixFunnel {
 
         // Inicializar estado
         this.updatePowerState(isPoweredOn);
-        this.updateSegmentDisplay(selectedSegments, progress, isPoweredOn);
+        this.updateSegmentDisplay(selectedSegments, this.segmentProgress, isPoweredOn);
     }
 
     updatePowerState(isPoweredOn) {
@@ -595,7 +596,7 @@ class VoxyMixFunnel {
     startSegmentKnob(e, selectedSegments) {
         if (selectedSegments.size === 0) return;
         e.preventDefault();
-        isDragging = true;
+        this.segmentIsDragging = true;
         
         const mainKnob = document.getElementById('mainKnob');
         if (mainKnob) {
@@ -606,21 +607,21 @@ class VoxyMixFunnel {
     }
 
     dragSegmentKnob(e, selectedSegments) {
-        if (!isDragging || selectedSegments.size === 0) return;
+        if (!this.segmentIsDragging || selectedSegments.size === 0) return;
         if (e.cancelable) e.preventDefault();
         
         // Simular progresso baseado no movimento
-        currentRotation += 2;
-        if (currentRotation > 720) currentRotation = 720;
-        
-        progress = (currentRotation / 720) * 100;
+        this.segmentCurrentRotation += 2;
+        if (this.segmentCurrentRotation > 720) this.segmentCurrentRotation = 720;
+
+        this.segmentProgress = (this.segmentCurrentRotation / 720) * 100;
         
         const indicator = document.querySelector('#mainKnob .knob-indicator');
         if (indicator) {
-            indicator.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
+            indicator.style.transform = `translateX(-50%) rotate(${this.segmentCurrentRotation}deg)`;
         }
-        
-        this.updateSegmentDisplay(selectedSegments, progress, true);
+
+        this.updateSegmentDisplay(selectedSegments, this.segmentProgress, true);
         
         if (Math.random() < 0.05) {
             this.showRandomSegmentNotification(selectedSegments);
@@ -628,14 +629,14 @@ class VoxyMixFunnel {
     }
 
     stopSegmentKnob() {
-        if (isDragging) {
+        if (this.segmentIsDragging) {
             const mainKnob = document.getElementById('mainKnob');
             if (mainKnob) {
                 mainKnob.classList.remove('dragging');
             }
             this.audioSystem.playRelease();
         }
-        isDragging = false;
+        this.segmentIsDragging = false;
     }
 
     updateSegmentDisplay(selectedSegments, progress, isPoweredOn) {
