@@ -201,13 +201,13 @@ class VoxyMixFunnel {
         
         const successScreen = document.getElementById('successScreen1');
         successScreen.classList.add('show');
-        
+
         this.audioSystem.playSuccess();
-        
-        // Botão continuar
-        document.getElementById('continueToNextStep')?.addEventListener('click', () => {
+
+        // Avança automaticamente para a etapa 2
+        setTimeout(() => {
             this.goToStep(2);
-        });
+        }, 1500);
     }
 
     initKonamiCode() {
@@ -1794,7 +1794,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Expor funções globais para uso em HTML
     window.goToStep = (step) => voxyMixApp.goToStep(step);
-    window.continueToNextStep = () => voxyMixApp.goToStep(voxyMixApp.currentStep + 1);
 });
 
 // ===== TRATAMENTO DE ERROS GLOBAL =====
